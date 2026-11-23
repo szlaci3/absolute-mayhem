@@ -7,7 +7,7 @@ with sync_playwright() as p:
  assert 'fallback' in page.locator('#model').inner_text()
  page.locator('#details').click()
  detail=page.locator('#dialogbody').inner_text()
- assert 'quota' in detail and '429' in detail and 'Selected: gemini-4-hydrogen' in detail
+ assert 'quota' in detail and '429' in detail and 'Selected: antigravity-preview-09-2026' in detail
  page.locator('#close').click()
  page.locator('#examples button').first.click()
  page.locator('#apply').click()

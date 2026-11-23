@@ -4,7 +4,7 @@ import {examples,localEdit} from './local.js';
 const $=id=>document.getElementById(id),key='absolute-mayhem.world.v1';
 let w=initial(),undo=[],log=[],tab='rules',hover=null,route=null,busy=false;
 try{const s=JSON.parse(localStorage.getItem(key));if(s?.w?.version===1&&s.w.player&&s.w.entities.orrery){w=s.w;undo=s.undo||[];log=s.log||[]}}catch{}
-let provider={selected:'gemini-4-hydrogen',actual:null,reason:'Checking server availability.'};
+let provider={selected:'antigravity-preview-09-2026',actual:null,reason:'Checking server availability.'};
 let online=false;
 const scene=createScene($('scene')),safe=s=>String(s);
 function save(){try{localStorage.setItem(key,JSON.stringify({w,undo,log}));$('saved').textContent='●  Saved locally'}catch{$('saved').textContent='Save unavailable'}}
