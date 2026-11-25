@@ -2,8 +2,13 @@ import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {generate,models,select,status,probe} from './provider.js';
+import {vendorFiles} from './browser-vendor.js';
 const root=fileURLToPath(new URL(process.env.NODE_ENV==='production'?'./dist/':'./public/',import.meta.url));
 const files={'/':'index.html','/app.js':'app.js','/engine.js':'engine.js','/scene.js':'scene.js','/local.js':'local.js','/style.css':'style.css'};
+files['/observatory.js']='observatory.js';
+for (const [name, source] of Object.entries(vendorFiles)) {
+ files['/vendor/'+name] = process.env.NODE_ENV==='production' ? 'vendor/'+name : '../node_modules/'+source;
+}
 const ready=select();let busy=false,hits=[];
 http.createServer(async(req,res)=>{
  const json=(code,v)=>{res.writeHead(code,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(v))};

@@ -27,11 +27,27 @@ function use(id){const near=Object.values(w.entities).filter(e=>Math.abs(e.x-w.p
 function stop(){clearInterval(route);route=null}
 window.addEventListener('keydown',e=>{if(e.target.matches('input,textarea')||document.querySelector('dialog').open||e.ctrlKey||e.metaKey)return;
  const d={w:[0,-1],s:[0,1],a:[-1,0],d:[1,0],arrowup:[0,-1],arrowdown:[0,1],arrowleft:[-1,0],arrowright:[1,0]}[e.key.toLowerCase()];if(d){e.preventDefault();stop();if(move(w,...d))update()}if(e.key.toLowerCase()==='e'){stop();use()}});
-const cv=$('scene');cv.onpointermove=e=>hover=scene.tile(e.clientX,e.clientY);cv.onpointerleave=()=>hover=null;
-cv.onclick=e=>{cv.focus();stop();let dest=scene.tile(e.clientX,e.clientY);
- // Sprite tops sit above their floor tile. Pick their silhouette before testing the floor.
- const r=cv.getBoundingClientRect(),px=(e.clientX-r.left)*760/r.width,py=(e.clientY-r.top)*420/r.height;
- let target=Object.values(w.entities).filter(v=>v.kind!=='bridge').reverse().find(v=>{let x=315+(v.x-v.y)*24,y=95+(v.x+v.y)*10;return Math.abs(px-x)<12&&py<=y+2&&py>=y-35})||at(w,dest.x,dest.y).find(v=>v.kind!=='bridge');if(target)dest=target;
+const cv=$('scene');
+let pressStart=null, dragged=false;
+cv.addEventListener('pointerdown',e=>{
+ if(pressStart){dragged=true;return}
+ pressStart={x:e.clientX,y:e.clientY};
+ dragged=false;
+});
+cv.addEventListener('pointermove',e=>{
+ if(pressStart&&Math.hypot(e.clientX-pressStart.x,e.clientY-pressStart.y)>5)dragged=true;
+ hover=e.pointerType==='touch'?null:{x:e.clientX,y:e.clientY};
+});
+cv.addEventListener('pointerup',()=>{pressStart=null});
+cv.addEventListener('pointercancel',()=>{pressStart=null;dragged=true;hover=null});
+cv.onpointerleave=()=>hover=null;
+cv.onclick=e=>{
+ if(dragged)return;
+ cv.focus();
+ const dest=scene.pick(e.clientX,e.clientY);
+ if(!dest)return;
+ stop();
+ const target=w.entities[dest.id]||at(w,dest.x,dest.y).find(v=>v.kind!=='bridge');
  let queue=[[w.player.x,w.player.y,[]]],seen=new Set(),path=null;
  for(let i=0;i<queue.length;i++){const [x,y,p]=queue[i];if(Math.abs(x-dest.x)+Math.abs(y-dest.y)<=(target?1:0)){path=p;break}for(const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){const a=x+dx,b=y+dy,k=a+','+b;if(!seen.has(k)&&walkable(w,a,b)){seen.add(k);queue.push([a,b,[...p,[dx,dy]]])}}}
  if(!path){notice('No dry path to that tile.');return}function step(){if(!path.length){stop();if(target)use(target.id);return}if(!move(w,...path.shift()))stop();update()}route=setInterval(step,110);step()};
@@ -43,8 +59,8 @@ $('apply').onclick=async()=>{const prompt=$('prompt').value.trim();if(!prompt||b
 $('undo').onclick=()=>{if(!undo.length||busy)return;stop();w=undo.pop();journal('Undo · restored revision '+w.revision);notice('Pre-edit checkpoint restored.');update()};
 for(const [i,s] of examples.entries()){const b=document.createElement('button');b.textContent=['A timed bridge bell','Extend the lightspan timer','A footstep-counting plate'][i];b.onclick=()=>{$('prompt').value=s;$('prompt').focus()};$('examples').append(b)}
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(el=>el.classList.toggle('active',el===b));drawUI()});
-$('help').onclick=()=>modal('Field controls','WASD or arrow keys move one map tile. E interacts with the closest object. Click a tile to walk there, or click an object to approach and use it.\n\nIn the offline compiler, try: When I ring the bell, increment charge by 1 and open the gate for 5 seconds. Add the bell and gate first. Conditions can end with “only if charge is at least 2”. The State and Events tabs expose counters and triggered rules.\n\nApply mechanic updates the running world. Undo edit restores the complete pre-edit checkpoint. Simulation time advances while this tab is visible.');
+$('help').onclick=()=>modal('Field controls','WASD or arrow keys move one map tile. E interacts with the closest object. Click a tile to walk there, or click an object to approach and use it. Drag to orbit, scroll or pinch to zoom, and use ↺ View to reset the camera.\n\nIn the offline compiler, try: When I ring the bell, increment charge by 1 and open the gate for 5 seconds. Add the bell and gate first. Conditions can end with “only if charge is at least 2”. The State and Events tabs expose counters and triggered rules.\n\nApply mechanic updates the running world. Undo edit restores the complete pre-edit checkpoint. Simulation time advances while this tab is visible.');
 $('details').onclick=()=>modal('Model connection','Selected: '+provider.selected+'\nResponding: '+(provider.actual||'None')+'\nFallback: gemini-3.5-flash-lite\n\n'+(provider.reason||'Primary model verified.')+'\n\n'+(online?'World edits are generated server-side.':'Local compiler edits are deterministic and labeled in the journal.'));
 $('journal').onclick=()=>modal('Field journal',log.slice().reverse().join('\n\n')||'No interactions or edits recorded yet.');$('close').onclick=()=>document.querySelector('dialog').close();
-let last=0;function frame(t){if(t-last>65){scene.draw(w,t,hover);last=t}requestAnimationFrame(frame)}requestAnimationFrame(frame);
+let last=0;function frame(t){if(t-last>=1000/30){scene.draw(w,t,hover);last=t}requestAnimationFrame(frame)}requestAnimationFrame(frame);
 setInterval(()=>{if(!document.hidden){tick(w);if(tab==='vars'||Object.values(w.rules).some(r=>r.event==='timer'||r.event==='tick'))drawUI();save()}},1000);update();

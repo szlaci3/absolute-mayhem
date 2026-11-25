@@ -1,5 +1,5 @@
 # Absolute Mayhem
-A browser-based conversational world studio set in a flooded observatory. An isometric canvas renderer, rules and simulation run in the browser. Only world edits and startup model probes use the server-side Google Gemini endpoint.
+A browser-based conversational world studio set in a flooded observatory. Three.js renders the flooded terraces, explorer and interactive objects as a lit 3D scene using WebGL 2. Rules and simulation run in the browser. Only world edits and startup model probes use the server-side Google Gemini endpoint.
 
 ## Run
 Use Node 24.5+ and npm. From the checkout:
@@ -11,10 +11,10 @@ npm run build
 NODE_ENV=production npm start
 ```
 
-Open http://127.0.0.1:3000. For development use `npm start`, which serves public/ directly. PORT and HOST override the default local listener. A server-side Node host can run the production command with HOST=0.0.0.0. The build has no third-party runtime dependencies.
+Open http://127.0.0.1:3000. For development use `npm start`, which serves public/ directly. PORT and HOST override the default local listener. A server-side Node host can run the production command with HOST=0.0.0.0. The server serves Three.js locally. Production builds include the browser modules in dist/vendor/.
 
 ## Play and edit
-Move with WASD or arrows. Press E near objects or click an object to walk up and use it. Light the tide lantern, align the meridian lens, cross the lightspan and wake the orrery. The objective panel guides each step. The browser saves simulation state and twelve pre-edit checkpoints locally. Undo restores position, rules, variables and timer deadlines together. Simulation time pauses in hidden tabs.
+Drag the scene to orbit, scroll or pinch to zoom, and use ↺ View to restore the opening camera. Move with WASD or arrows. Press E near objects or click an object to walk up and use it. Light the tide lantern, align the meridian lens, cross the lightspan and wake the orrery. The objective panel guides each step. The browser saves simulation state and twelve pre-edit checkpoints locally. Undo restores position, rules, variables and timer deadlines together. Simulation time pauses in hidden tabs.
 
 The offline compiler is deterministic. Try the three composer suggestions, or combine sentences over named objects:
 

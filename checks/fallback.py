@@ -1,8 +1,9 @@
+import os
 from playwright.sync_api import sync_playwright
 with sync_playwright() as p:
- b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+ b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox','--enable-unsafe-swiftshader'])
  page=b.new_page()
- page.goto('http://127.0.0.1:3101')
+ page.goto(os.environ.get('STUDIO_URL','http://127.0.0.1:3101'))
  page.wait_for_selector('#model:text("TEST FIXTURE")')
  assert 'fallback' in page.locator('#model').inner_text()
  page.locator('#details').click()
@@ -16,5 +17,5 @@ with sync_playwright() as p:
  page.wait_for_function("JSON.parse(localStorage.getItem('absolute-mayhem.world.v1')).w.entities.span_a.on")
  page.locator('#journal').click()
  assert 'TEST FIXTURE' in page.locator('#dialogbody').inner_text()
- print('Chromium fixture PASS: Hydrogen quota rejection, validated fallback probe, responding model and reason, edit request, playable bell, journal attribution')
+ print('Chromium fixture PASS: primary quota rejection, validated fallback probe, responding model and reason, edit request, playable bell, journal attribution')
  b.close()
